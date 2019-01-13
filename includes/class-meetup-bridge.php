@@ -59,7 +59,7 @@ class Meetup_Bridge {
 	 * Define the core functionality of the plugin.
 	 *
 	 * Set the plugin name and the plugin version that can be used throughout the plugin.
-	 * Load the dependencies, define the locale, and set the hooks for the admin area.
+	 * Load the dependencies and set the hooks for the admin area.
 	 *
 	 * @since    1.0.0
 	 */
@@ -72,7 +72,6 @@ class Meetup_Bridge {
 		$this->plugin_name = 'meetup-bridge';
 
 		$this->load_dependencies();
-		$this->set_locale();
 		$this->define_admin_hooks();
 
 	}
@@ -83,7 +82,6 @@ class Meetup_Bridge {
 	 * Include the following files that make up the plugin:
 	 *
 	 * - Meetup_Bridge_Loader. Orchestrates the hooks of the plugin.
-	 * - Meetup_Bridge_i18n. Defines internationalization functionality.
 	 * - Meetup_Bridge_Admin. Defines all hooks for the admin area.
 	 *
 	 * Create an instance of the loader which will be used to register the hooks
@@ -101,34 +99,11 @@ class Meetup_Bridge {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-meetup-bridge-loader.php';
 
 		/**
-		 * The class responsible for defining internationalization functionality
-		 * of the plugin.
-		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-meetup-bridge-i18n.php';
-
-		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-meetup-bridge-admin.php';
 
 		$this->loader = new Meetup_Bridge_Loader();
-
-	}
-
-	/**
-	 * Define the locale for this plugin for internationalization.
-	 *
-	 * Uses the Meetup_Bridge_i18n class in order to set the domain and to register the hook
-	 * with WordPress.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 */
-	private function set_locale() {
-
-		$plugin_i18n = new Meetup_Bridge_i18n();
-
-		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
 
 	}
 
