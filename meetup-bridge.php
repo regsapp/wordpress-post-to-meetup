@@ -60,7 +60,7 @@ register_deactivation_hook( __FILE__, 'deactivate_meetup_bridge' );
 
 /**
  * The core plugin class that is used to define internationalization,
- * admin-specific hooks, and public-facing site hooks.
+ * admin-specific hooks.
  */
 require plugin_dir_path( __FILE__ ) . 'includes/class-meetup-bridge.php';
 
