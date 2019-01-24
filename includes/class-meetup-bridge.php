@@ -98,6 +98,8 @@ class Meetup_Bridge {
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-meetup-bridge-loader.php';
 
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-meetup-bridge-settings.php';
+
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
@@ -117,7 +119,9 @@ class Meetup_Bridge {
 	private function define_admin_hooks() {
 
 		$plugin_admin = new Meetup_Bridge_Admin( $this->get_plugin_name(), $this->get_version() );
+		$plugin_settings = new Meetup_Bridge_Settings( $this->get_plugin_name(), $this->get_version() );
 
+        $this->loader->add_action( 'admin_menu', $plugin_settings, 'admin_menu', 10, 2);
 	}
 
 	/**
