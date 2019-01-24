@@ -59,9 +59,13 @@ class Meetup
      * Constructor
      * @param array $parameters The parameters passed during construction
      */
-    public function __construct(array $parameters = array())
+    public function __construct($key, $urlname)
     {
-        $this->_parameters = array_merge($this->_parameters, $parameters);
+        $this->_parameters = array(
+            'key' => $key,
+            'urlname' => $urlname,
+            'sign' => true
+        );
         $this->_next = $this->_response = null;
     }
     /**
@@ -177,8 +181,9 @@ class Meetup
      * @return mixed A json object containing response data
      * @throws Exception if anything goes wrong
      */
-    public function updateEvent(array $parameters = array())
+    public function updateEvent(array $parameters, $event_id)
     {
+        $parameters['id'] = $event_id;
         return $this->patch('/:urlname/events/:id', $parameters);
     }
     /**
@@ -192,6 +197,13 @@ class Meetup
     {
         return $this->delete('/2/event/:id', $parameters);
     }
+
+    public function postPhoto(array $parameters, $event_id)
+    {
+        $parameters['id'] = $event_id;
+        return $this->post('/:urlname/events/:id/photos?key=:key&sign=true', $parameters, 'multipart/form-data');
+    }
+
     /**
      * Perform a get on any url supported by meetup, use : to specify parameters that use
      * placeholders and pass that exact parameter name as a parameter.
@@ -223,11 +235,15 @@ class Meetup
      * $meetup->post('/2/member/:id', array('id'=>10));
      * @endcode
      */
-    public function post($path, array $parameters = array())
+    public function post($path, array $parameters = array(), $contentType = null)
     {
         list($url, $params) = $this->params($path, $parameters);
 
-        return $this->api(self::BASE . $url, $params, self::POST);
+        if ($contentType) {
+            return $this->api(self::BASE . $url, $params, self::POST, $contentType);
+        } else {
+            return $this->api(self::BASE . $url, $params, self::POST);
+        }
     }
     /**
      * Perform a patch on any url supported by meetup, use : to specify parameters that use
@@ -295,7 +311,8 @@ class Meetup
     {
         $url    = $path;
         $params = $parameters;
-        if (preg_match_all('/:([a-z]+)/', $url, $matches))
+        $params = array_merge($parameters, $this->_parameters);
+        if (preg_match_all('/:([a-z0-9]+)/', $url, $matches))
         {
             foreach ($matches[0] as $i => $match)
             {
@@ -362,18 +379,8 @@ class Meetup
      * @throws Exception if anything goes wrong
      * @note The parameter 'sign' is automatically included with value 'true' if using an api key
      */
-    protected function api($url, $parameters, $action=self::GET)
+    protected function api($url, $parameters, $action=self::GET, $contentType = null)
     {
-        //merge parameters
-        $params = array_merge($parameters, $this->_parameters);
-
-        //make sure 'sign' is included when using api key only
-        if(in_array('key', $params) && $url!=self::ACCESS && $url!=self::AUTHORIZE)
-        {
-            //api request (any) - include sign parameters
-            $params = array_merge( array('sign', 'true'), $params );
-        }
-
         //init curl
         $ch = curl_init();
 
@@ -398,20 +405,30 @@ class Meetup
             {
                 array_push($headers, 'Content-Type: application/x-www-form-urlencoded');
             }
-            else if( strpos($url, self::BASE) === 0 && in_array('access_token', $params) )
+            else if( strpos($url, self::BASE) === 0 && in_array('access_token', $parameters) )
             {
-                array_merge($params, array('token_type'=>'bearer'));
+                array_merge($parameters, array('token_type'=>'bearer'));
             }
 
-            curl_setopt($ch, CURLOPT_URL, $url . (!empty($params) ? ('?' . http_build_query($params)) : ''));
+            curl_setopt($ch, CURLOPT_URL, $url . (!empty($parameters) ? ('?' . http_build_query($parameters)) : ''));
         }
         else
         {
             //POST + PUT
 
+            if ($contentType) {
+                array_push($headers, 'Content-Type: ' . $contentType);
+            }
+
             curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_POST, count($params));
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+            curl_setopt($ch, CURLOPT_POST, count($parameters));
+
+            // We don't need http_build_query() in case of postPhoto (multipart request)
+            if ($contentType) {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $parameters);
+            } else {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($parameters));
+            }
         }
 
         //need custom types for PUT/DELETE
