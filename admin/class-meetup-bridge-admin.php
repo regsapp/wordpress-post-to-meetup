@@ -70,6 +70,10 @@ class Meetup_Bridge_Admin {
             return;
         }
 
+        if ($post->post_status != 'publish') {
+            return;
+        }
+
         $builder = new Meetup_Bridge_Builder();
 
         $meetup_data = $builder->build_meetup_data_according_to($post_ID);
