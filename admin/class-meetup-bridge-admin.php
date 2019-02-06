@@ -83,7 +83,6 @@ class Meetup_Bridge_Admin {
     /**
      * @param int $post_ID
      * @param array $data
-     * @throws Exception
      *
      * @since 1.0.0
      */
