@@ -75,9 +75,9 @@ class Meetup
      * @return mixed A json object containing response data
      * @throws Exception if anything goes wrong
      */
-    public function getEvents(array $parameters = array())
+    public function getEvent(array $parameters = array())
     {
-        return $this->get('/2/events', $parameters);
+        return $this->get('/:urlname/events/:id', $parameters);
     }
     /**
      * Stub for fetching groups
