@@ -90,17 +90,17 @@ class Meetup_Bridge_Admin {
     {
         require_once dirname(__FILE__) . '/../includes/class-meetup-api.php';
         try {
-            if ($this->is_event_created_for_post($post_ID)) {
+            if ($this->is_event_created_for_post($post_ID) && $this->is_event_exist_and_updatable($this->get_event_id_for_post($post_ID))) {
                 $api = new Meetup(get_option('meetup-bridge-meetup-api'), get_option('meetup-bridge-meetup-group-slug'));
                 $response = $api->updateEvent($data, $this->get_event_id_for_post($post_ID));
             } else {
                 $this->create_event_and_attach_to_post($post_ID, $data);
             }
-        } catch (Exception $e) {
-            echo $e->getMessage(); die;
-        }
 
-        $this->update_meetup_event_photos($post_ID);
+            $this->update_meetup_event_photos($post_ID);
+        } catch (Exception $e) {
+            trigger_error($e->getMessage(), E_WARNING);
+        }
     }
 
     protected function update_meetup_event_photos($post_id)
@@ -130,7 +130,7 @@ class Meetup_Bridge_Admin {
         try {
             $response = $api->postPhoto($data, $event_id);
         } catch (Exception $e) {
-            $a = 1;
+            trigger_error($e->getMessage(), E_WARNING);
         }
 
         update_post_meta($attachment->ID, 'meetup_photo_id', $response->id);
@@ -173,6 +173,20 @@ class Meetup_Bridge_Admin {
         update_post_meta($post_id, 'meetup_event_id', $event_id);
     }
 
+    /**
+     * @param $event_id
+     * @throws Exception
+     */
+    protected function is_event_exist_and_updatable($event_id)
+    {
+        try {
+            $api = new Meetup(get_option('meetup-bridge-meetup-api'), get_option('meetup-bridge-meetup-group-slug'));
+            $response = $api->getEvent(array('id' => $event_id));
+        } catch (Exception $e) {
+            return false;
+        }
 
+        return true;
+    }
 
 }
