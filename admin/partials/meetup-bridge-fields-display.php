@@ -34,11 +34,10 @@ foreach ($meta_keys as $meta_key) {
 $meetup_fields = array(
     'description',
     'duration',
-    'lat',
-    'lon',
     'name',
     'time',
-    'how_to_find_us'
+    'how_to_find_us',
+    'venue_id'
 );
 
 function render_select($field_name, $options)

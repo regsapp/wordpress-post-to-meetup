@@ -49,11 +49,6 @@ class Meetup_Bridge_Builder {
             $event['time'] = strtotime($event['time']) . '000';
         }
 
-        if ($event['lat']) {
-            $event['lat'] = number_format($event['lat'], 5, '.', '');
-            $event['lon'] = number_format($event['lon'], 5, '.', '');
-        }
-
         return $event;
     }
 
